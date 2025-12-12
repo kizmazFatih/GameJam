@@ -16,7 +16,7 @@ public class SOInventory : ScriptableObject
             if (slot.isFull == false)
             {
                 slot.AddItemToSlot(new_item, new_amount);
-                //InventoryController.instance.UpdateSlotUI(i);
+                InventoryController.instance.UpdateSlotUI(i);
                 break;
             }
             else if (slot.item == new_item)
@@ -28,7 +28,7 @@ public class SOInventory : ScriptableObject
                     {
                         slot.amount = new_item.max_stack;
                         var extra_amount = total_amount - new_item.max_stack;
-                        //InventoryController.instance.UpdateSlotUI(i);
+                        InventoryController.instance.UpdateSlotUI(i);
                         AddItem(new_item, extra_amount);
                         
                         break;
@@ -36,7 +36,7 @@ public class SOInventory : ScriptableObject
                     else
                     {
                         slot.amount = total_amount;
-                        //InventoryController.instance.UpdateSlotUI(i);
+                        InventoryController.instance.UpdateSlotUI(i);
                     }
 
                     break;

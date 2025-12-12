@@ -31,26 +31,10 @@ public class AbilityManager : MonoBehaviour
 
     public void AddAbility(PlayerSkill type)
     {
-        if (activeSkills.Contains(type))
+        if (activeSkills.Count < maxSlots)
         {
-            activeSkills.Remove(type);
+            activeSkills.Add(type);
         }
-        else
-        {
-            if (activeSkills.Count < maxSlots)
-            {
-                activeSkills.Add(type);
-            }
-            else
-            {
-                Debug.Log("Slotlar dolu! Birini çıkarman lazım.");
-                // Buraya "Bip" sesi veya uyarı efekti ekleyebilirsin
-                return;
-            }
-        }
-
-
-
 
     }
 }

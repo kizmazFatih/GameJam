@@ -36,10 +36,10 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
           if(target.tag == "Trash")
           {
-            //int x =InventoryController.instance.FindMyIndex(parent_after_drag);
+            int x =InventoryController.instance.FindMyIndex(parent_after_drag);
             transform.SetParent(parent_after_drag);
             transform.SetAsLastSibling();
-            //InventoryController.instance.DeleteItem(x);
+            InventoryController.instance.DeleteItem(x);
           }
           else
           {
@@ -74,7 +74,7 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
      transform.SetAsLastSibling();
 
 
-     //InventoryController.instance.ChangeSlotsEach(transform.parent, parent_after_drag);
+     InventoryController.instance.ChangeSlotsEach(transform.parent, parent_after_drag);
    }
 
 
