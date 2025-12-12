@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070c20fe7fcae9f43878d80b59544b9a, type: 3}
   m_Name: Sprint
   m_EditorClassIdentifier: 
-  isPlaceable: 0
-  my_image: {fileID: 0}
-  my_prefab: {fileID: 0}
-  my_amount: 0
-  max_stack: 0
+  skillName: Sprint
+  pickupMessage: "Ko\u015F"
+  player_skill: 2
+  my_image: {fileID: 2800000, guid: 2b5e9ae96c5644d8bae932f8b4ca68a2, type: 3}
+  my_prefab: {fileID: 2118118698033633329, guid: 33411044c2605b6408f81e73849eea1e, type: 3}
+  my_amount: 1
+  max_stack: 1

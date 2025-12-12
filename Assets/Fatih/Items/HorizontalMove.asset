@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070c20fe7fcae9f43878d80b59544b9a, type: 3}
   m_Name: HorizontalMove
   m_EditorClassIdentifier: 
+  skillName: Horizontal
+  pickupMessage: "Yenge\xE7\n"
   player_skill: 1
   my_image: {fileID: 2800000, guid: a0fc465d6cf04254a2938578735e2383, type: 3}
-  my_prefab: {fileID: 0}
+  my_prefab: {fileID: 2118118698033633329, guid: 33411044c2605b6408f81e73849eea1e, type: 3}
   my_amount: 1
   max_stack: 1
