@@ -1,161 +1,94 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
-    [Header("Gerekli Bileşenler")]
-    public AbilityManager abilityManager;
+    private CharacterController _characterController;
 
-    [Header("Hız Ayarları")]
-    public float walkSpeed = 5.0f;
-    public float sprintSpeed = 9.0f;
-    public float crouchSpeed = 2.5f;
+    [Header("Movement Settings")]
+    [SerializeField] private float speed = 5.0f;
+    [SerializeField] private float smoothTime = 0.05f;
 
-    [Header("Fizik Ayarları")]
-    public float jumpHeight = 1.5f;
-    public float gravity = -19.62f;
+    [Header("Input Axis Controls")]
+    // W ve S tuşlarını (İleri/Geri) açıp kapatır
+    public bool canMoveForwardBackward = true; 
+    
+    // A ve D tuşlarını (Sağ/Sol - Strafe) açıp kapatır
+    public bool canMoveStrafe = true;          
 
-    [Header("Eğilme (Crouch) Ayarları")]
-    public float standHeight = 2.0f;
-    public float crouchHeight = 1.0f;
-    public float crouchTransitionSpeed = 10f;
+    [Header("Other Controls")]
+    public bool canRotate = true; // Mouse ile dönüş
 
-    // --- Private Değişkenler ---
-    private CharacterController controller;
-    private PlayerInputs inputActions;
-    private Vector2 moveInput;
-    private Vector3 velocity;
-    private bool isGrounded;
-    private bool isSprinting;
-    private bool isCrouching;
+    // Değişkenler
+    private float _currentVelocity;
+    private float _gravity = -9.81f;
+    [SerializeField] private float gravityMultiplier = 3.0f;
+    private float _verticalVelocity;
 
     private void Awake()
     {
-        controller = GetComponent<CharacterController>();
-        inputActions = new PlayerInputs();
-
-        // --- INPUT TANIMLAMALARI ---
-
-        // Hareket (WASD)
-        inputActions.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        // Zıplama (Space)
-        inputActions.Player.Jump.performed += ctx => TryJump();
-
-        // Koşma (Shift)
-        inputActions.Player.Sprint.performed += ctx => isSprinting = true;
-        inputActions.Player.Sprint.canceled += ctx => isSprinting = false;
-
-        // Eğilme (C)
-        inputActions.Player.Crouch.performed += ctx => isCrouching = true;
-        inputActions.Player.Crouch.canceled += ctx => isCrouching = false;
+        _characterController = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
-
-    private void OnEnable() => inputActions.Enable();
-    private void OnDisable() => inputActions.Disable();
 
     private void Update()
     {
-        float cameraYRotation = Camera.main.transform.eulerAngles.y;
-
-        transform.rotation = Quaternion.Euler(0, cameraYRotation, 0);
-
-        HandleGravity();
-        HandleMovement();
-        HandleCrouchState();
+        ApplyRotation();
+        ApplyGravity();
+        ApplyMovement();
     }
 
-    private void HandleGravity()
+    private void ApplyGravity()
     {
-        isGrounded = controller.isGrounded;
-
-        // Yerdeysek ve aşağı doğru hızlanıyorsak hızı sıfırla (hafif negatif tutarak yere yapıştır)
-        if (isGrounded && velocity.y < 0)
+        if (_characterController.isGrounded && _verticalVelocity < 0.0f)
         {
-            velocity.y = -2f;
+            _verticalVelocity = -2.0f;
         }
-
-        // Yerçekimi uygula (v = a * t)
-        velocity.y += gravity * Time.deltaTime;
-
-        // Yerçekimi hareketini uygula
-        controller.Move(velocity * Time.deltaTime);
+        else
+        {
+            _verticalVelocity += _gravity * gravityMultiplier * Time.deltaTime;
+        }
     }
 
-    private void HandleMovement()
+    private void ApplyRotation()
     {
-        // 1. Yetenek Kontrolü: MOVE
-        // Eğer Move yeteneği envanterde yoksa input gelse bile hareket 0 olur.
-        if (abilityManager != null && !abilityManager.CanUse(MovementType.Move))
+        if (!canRotate) return;
+
+        if (Camera.main != null)
         {
-            // Hareket yok
-            return;
+            var targetAngle = Camera.main.transform.eulerAngles.y;
+            var angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _currentVelocity, smoothTime);
+            transform.rotation = Quaternion.Euler(0.0f, angle, 0.0f);
         }
-
-        // Hız belirleme
-        float currentSpeed = walkSpeed;
-
-        // 2. Yetenek Kontrolü: SPRINT
-        if (isSprinting && !isCrouching) // Eğilirken koşulmaz
-        {
-            if (abilityManager == null || abilityManager.CanUse(MovementType.Sprint))
-            {
-                currentSpeed = sprintSpeed;
-            }
-        }
-
-        // 3. Yetenek Kontrolü: CROUCH (Hız etkisi)
-        if (isCrouching)
-        {
-            if (abilityManager == null || abilityManager.CanUse(MovementType.Crouch))
-            {
-                currentSpeed = crouchSpeed;
-            }
-        }
-
-        // Hareket Vektörü (Local Space -> World Space)
-        // transform.right ve forward kullandığımız için karakter nereye dönükse oraya gider.
-        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-
-        // Hareketi uygula
-        controller.Move(move * currentSpeed * Time.deltaTime);
     }
 
-    private void TryJump()
+    private void ApplyMovement()
     {
-        // Yerde değilsek zıplayamayız
-        if (!isGrounded) return;
+        Vector2 input = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
 
-        // 4. Yetenek Kontrolü: JUMP
-        if (abilityManager != null && !abilityManager.CanUse(MovementType.Jump))
+        // 2. İSTEĞE GÖRE FİLTRELEME (Burayı değiştirdik)
+        
+        // Eğer W-S (İleri/Geri) hareketi kapalıysa, inputun Y değerini sıfırla
+        if (!canMoveForwardBackward) 
         {
-            // Zıplama yeteneği yok! (Buraya hata sesi ekleyebilirsin)
-            return;
+            input.y = 0f; 
         }
 
-        // Fizik Formülü: v = sqrt(h * -2 * g)
-        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-    }
-
-    private void HandleCrouchState()
-    {
-        // Yetenek var mı?
-        bool canCrouch = abilityManager == null || abilityManager.CanUse(MovementType.Crouch);
-
-        // Hedef yükseklik
-        float targetHeight = (canCrouch && isCrouching) ? crouchHeight : standHeight;
-
-        // Boyu yumuşakça değiştir
-        if (Mathf.Abs(controller.height - targetHeight) > 0.01f)
+        // Eğer A-D (Sağ/Sol) hareketi kapalıysa, inputun X değerini sıfırla
+        if (!canMoveStrafe) 
         {
-            controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
-
-            // Karakterin pivot noktası genelde altta değil ortada olabilir, 
-            // yere gömülmemesi veya havada kalmaması için Center noktasını da orantılı kaydırıyoruz.
-            Vector3 targetCenter = new Vector3(0, targetHeight / 2f, 0);
-            controller.center = Vector3.Lerp(controller.center, targetCenter, Time.deltaTime * crouchTransitionSpeed);
+            input.x = 0f; 
         }
+
+        // 3. Filtrelenmiş input ile hareket vektörünü oluştur
+        Vector3 move = (transform.right * input.x) + (transform.forward * input.y);
+        
+        // 4. Hareketi uygula (Gravity bağımsız)
+        Vector3 finalMovement = (move * speed) + (Vector3.up * _verticalVelocity);
+
+        _characterController.Move(finalMovement * Time.deltaTime);
     }
 }

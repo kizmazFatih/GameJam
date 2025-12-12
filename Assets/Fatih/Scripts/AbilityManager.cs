@@ -1,69 +1,56 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class AbilityManager : MonoBehaviour
 {
-    public static AbilityManager Instance; // Singleton yapalım, her yerden ulaşalım
+    public static AbilityManager instance;
 
-    [Header("Ayarlar")]
     public int maxSlots = 3;
-    
-    // O an aktif olan yeteneklerin listesi
-    // HashSet kullanıyoruz çünkü aynı yetenekten 2 tane olamaz ve araması çok hızlı
-    private HashSet<MovementType> activeAbilities = new HashSet<MovementType>();
+    HashSet<PlayerSkill> activeSkills = new HashSet<PlayerSkill>();
 
-    // UI'ın kendini güncellemesi için bir Event (Olay)
-    public event Action OnAbilitiesChanged;
 
     private void Awake()
     {
-        // Basit Singleton
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        // Başlangıçta varsayılan yetenekleri ekleyelim (İstersen boş bırak)
-        ToggleAbility(MovementType.Move);
-        ToggleAbility(MovementType.Jump);
-        ToggleAbility(MovementType.Sprint);
+        AddAbility(PlayerSkill.Vertical);
+        AddAbility(PlayerSkill.Horizontal);
+        AddAbility(PlayerSkill.Jump);
+        AddAbility(PlayerSkill.Sprint);
+
     }
 
-    // Yeteneği Aç/Kapa (Toggle)
-    public void ToggleAbility(MovementType type)
+    public void AddAbility(PlayerSkill type)
     {
-        // Eğer zaten varsa -> ÇIKAR
-        if (activeAbilities.Contains(type))
+        if (activeSkills.Contains(type))
         {
-            activeAbilities.Remove(type);
+            activeSkills.Remove(type);
         }
-        // Yoksa -> EKLE (Ama yer varsa)
         else
         {
-            if (activeAbilities.Count < maxSlots)
+            if (activeSkills.Count < maxSlots)
             {
-                activeAbilities.Add(type);
+                activeSkills.Add(type);
             }
             else
             {
                 Debug.Log("Slotlar dolu! Birini çıkarman lazım.");
                 // Buraya "Bip" sesi veya uyarı efekti ekleyebilirsin
-                return; 
+                return;
             }
         }
 
-        // Değişiklik oldu, UI'a haber ver
-        OnAbilitiesChanged?.Invoke();
-    }
 
-    // Diğer scriptler (FPSMovement) bunu soracak
-    public bool CanUse(MovementType type)
-    {
-        return activeAbilities.Contains(type);
-    }
-    
-    // UI için kaç slot dolu bilgisi
-    public int GetActiveCount()
-    {
-        return activeAbilities.Count;
+
+
     }
 }
