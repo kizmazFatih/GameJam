@@ -14,7 +14,7 @@ public class Raycast : MonoBehaviour
 
                 ShowInteractUI();
 
-                if (InputManager.instance.playerInputs.Player.Interaction.WasPressedThisFrame())
+                if (InputManager.instance.playerInputs.Interaction.Interact.WasPressedThisFrame())
                 {
                     interactable.Interact();
                 }

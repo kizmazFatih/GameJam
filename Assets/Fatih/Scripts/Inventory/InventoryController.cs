@@ -48,8 +48,9 @@ public class InventoryController : MonoBehaviour
       {
          Instantiate(UI_prefab, T_slots[slot_index]);
       }
-
-      T_slots[slot_index].GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = player_inventory.slots[slot_index].amount.ToString();
+      
+      //if(T_slots[slot_index].GetChild(0).GetChild(0) !=null )
+      //T_slots[slot_index].GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = player_inventory.slots[slot_index].amount.ToString();
 
       T_slots[slot_index].GetChild(0).GetComponent<RawImage>().texture = player_inventory.slots[slot_index].item_image; 
 
@@ -125,7 +126,19 @@ public class InventoryController : MonoBehaviour
 
 
 
+   public bool CheckSkill(PlayerSkill playerSkill)
+   {
 
+      for (int i = 0; i < player_inventory.slots.Count; i++)
+      {
+         if (player_inventory.slots[i].item.player_skill == playerSkill)
+         {
+            return true;
+         }
+      }
+      return false;
+      
+   }
 
 
 

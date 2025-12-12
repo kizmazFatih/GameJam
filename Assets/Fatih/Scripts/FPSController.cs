@@ -9,12 +9,6 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float speed = 5.0f;
     [SerializeField] private float smoothTime = 0.05f;
 
-    [Header("Input Axis Controls")]
-    // W ve S tuşlarını (İleri/Geri) açıp kapatır
-    public bool canMoveForwardBackward = true; 
-    
-    // A ve D tuşlarını (Sağ/Sol - Strafe) açıp kapatır
-    public bool canMoveStrafe = true;          
 
     [Header("Other Controls")]
     public bool canRotate = true; // Mouse ile dönüş
@@ -70,13 +64,13 @@ public class FPSController : MonoBehaviour
         // 2. İSTEĞE GÖRE FİLTRELEME (Burayı değiştirdik)
         
         // Eğer W-S (İleri/Geri) hareketi kapalıysa, inputun Y değerini sıfırla
-        if (!canMoveForwardBackward) 
+        if (InventoryController.instance.CheckSkill(PlayerSkill.Vertical) == false) 
         {
             input.y = 0f; 
         }
 
         // Eğer A-D (Sağ/Sol) hareketi kapalıysa, inputun X değerini sıfırla
-        if (!canMoveStrafe) 
+        if (InventoryController.instance.CheckSkill(PlayerSkill.Horizontal) == false) 
         {
             input.x = 0f; 
         }
