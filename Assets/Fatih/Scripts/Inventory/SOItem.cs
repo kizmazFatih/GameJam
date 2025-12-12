@@ -8,15 +8,15 @@ public class SOItem : ScriptableObject
     [TextArea]
     public string pickupMessage;
 
-    public PlayerSkill player_skill;
-    //public bool isPlaceable;
+    [Header("Oyun İçi Ayarlar")]
+    public bool isPlaceable;
+
+    [Header("Görseller ve Prefab")]
     public Texture my_image;
     public GameObject my_prefab;
 
     [Header("Stok Bilgisi")]
     public int my_amount;
     public int max_stack;
-
-
 
 }

@@ -141,19 +141,9 @@ public class FPSController : MonoBehaviour
     {
         Vector2 input = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
 
-        // 2. İSTEĞE GÖRE FİLTRELEME (Burayı değiştirdik)
-        
-        // Eğer W-S (İleri/Geri) hareketi kapalıysa, inputun Y değerini sıfırla
-        if (InventoryController.instance.CheckSkill(PlayerSkill.Vertical) == false) 
-        {
-            input.y = 0f; 
-        }
-
-        // Eğer A-D (Sağ/Sol) hareketi kapalıysa, inputun X değerini sıfırla
-        if (InventoryController.instance.CheckSkill(PlayerSkill.Horizontal) == false) 
-        {
-            input.x = 0f; 
-        }
+        // Filtreleme
+        if (!canMoveForwardBackward) input.y = 0f;
+        if (!canMoveStrafe) input.x = 0f;
 
         Vector3 move = (transform.right * input.x) + (transform.forward * input.y);
         

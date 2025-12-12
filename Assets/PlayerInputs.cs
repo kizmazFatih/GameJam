@@ -62,6 +62,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interaction"",
+                    ""type"": ""Button"",
+                    ""id"": ""d07c464d-7839-4516-bd4d-5ec6e7cd9c80"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -152,132 +161,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                }
-            ]
-        },
-        {
-            ""name"": ""Interaction"",
-            ""id"": ""ecf0b1bb-dce8-4c9d-bfc8-c351ace0b63a"",
-            ""actions"": [
-                {
-                    ""name"": ""Interact"",
-                    ""type"": ""Button"",
-                    ""id"": ""6d796712-b449-4a3f-82ca-baf329382ead"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
                 },
-                {
-                    ""name"": ""Num1"",
-                    ""type"": ""Button"",
-                    ""id"": ""67b9729b-745b-43eb-9ac4-5871ad6fe905"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Num2"",
-                    ""type"": ""Button"",
-                    ""id"": ""e53f34b8-375c-439e-8e23-7f97f30a1193"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Num3"",
-                    ""type"": ""Button"",
-                    ""id"": ""3624e728-8beb-4b75-abc2-933c26e488ee"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Num4"",
-                    ""type"": ""Button"",
-                    ""id"": ""70eb0916-dc13-460c-bbba-9c172083d081"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Scroll"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""79be52f9-24fd-450b-b569-e3f77aa47f53"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
                 {
                     ""name"": """",
-                    ""id"": ""d96cbfe1-1036-413e-8775-d2a12aa08e58"",
+                    ""id"": ""2bd09bf0-58dd-4c7f-96a2-65ea2d1fa82f"",
                     ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Interact"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""d4d7a825-f6ca-4dfb-8400-1ae7eb71b598"",
-                    ""path"": ""<Keyboard>/1"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Num1"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""402e2d4c-c132-4ad1-8828-084db656775c"",
-                    ""path"": ""<Keyboard>/2"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Num2"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""5c923a08-16ea-4558-9727-498fa4119367"",
-                    ""path"": ""<Keyboard>/3"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Num3"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""1ec02ea5-5a1e-4331-80c6-d33ec8808223"",
-                    ""path"": ""<Keyboard>/4"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Num4"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c0fe236a-fd85-41dd-9e9c-05b840ecc917"",
-                    ""path"": ""<Mouse>/scroll"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Scroll"",
+                    ""action"": ""Interaction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -292,14 +184,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
-        // Interaction
-        m_Interaction = asset.FindActionMap("Interaction", throwIfNotFound: true);
-        m_Interaction_Interact = m_Interaction.FindAction("Interact", throwIfNotFound: true);
-        m_Interaction_Num1 = m_Interaction.FindAction("Num1", throwIfNotFound: true);
-        m_Interaction_Num2 = m_Interaction.FindAction("Num2", throwIfNotFound: true);
-        m_Interaction_Num3 = m_Interaction.FindAction("Num3", throwIfNotFound: true);
-        m_Interaction_Num4 = m_Interaction.FindAction("Num4", throwIfNotFound: true);
-        m_Interaction_Scroll = m_Interaction.FindAction("Scroll", throwIfNotFound: true);
+        m_Player_Interaction = m_Player.FindAction("Interaction", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -365,6 +250,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Crouch;
     private readonly InputAction m_Player_Jump;
+    private readonly InputAction m_Player_Interaction;
     public struct PlayerActions
     {
         private @PlayerInputs m_Wrapper;
@@ -373,6 +259,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         public InputAction @Sprint => m_Wrapper.m_Player_Sprint;
         public InputAction @Crouch => m_Wrapper.m_Player_Crouch;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
+        public InputAction @Interaction => m_Wrapper.m_Player_Interaction;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -394,6 +281,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Interaction.started += instance.OnInteraction;
+            @Interaction.performed += instance.OnInteraction;
+            @Interaction.canceled += instance.OnInteraction;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -410,6 +300,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Interaction.started -= instance.OnInteraction;
+            @Interaction.performed -= instance.OnInteraction;
+            @Interaction.canceled -= instance.OnInteraction;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -427,106 +320,12 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         }
     }
     public PlayerActions @Player => new PlayerActions(this);
-
-    // Interaction
-    private readonly InputActionMap m_Interaction;
-    private List<IInteractionActions> m_InteractionActionsCallbackInterfaces = new List<IInteractionActions>();
-    private readonly InputAction m_Interaction_Interact;
-    private readonly InputAction m_Interaction_Num1;
-    private readonly InputAction m_Interaction_Num2;
-    private readonly InputAction m_Interaction_Num3;
-    private readonly InputAction m_Interaction_Num4;
-    private readonly InputAction m_Interaction_Scroll;
-    public struct InteractionActions
-    {
-        private @PlayerInputs m_Wrapper;
-        public InteractionActions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Interact => m_Wrapper.m_Interaction_Interact;
-        public InputAction @Num1 => m_Wrapper.m_Interaction_Num1;
-        public InputAction @Num2 => m_Wrapper.m_Interaction_Num2;
-        public InputAction @Num3 => m_Wrapper.m_Interaction_Num3;
-        public InputAction @Num4 => m_Wrapper.m_Interaction_Num4;
-        public InputAction @Scroll => m_Wrapper.m_Interaction_Scroll;
-        public InputActionMap Get() { return m_Wrapper.m_Interaction; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(InteractionActions set) { return set.Get(); }
-        public void AddCallbacks(IInteractionActions instance)
-        {
-            if (instance == null || m_Wrapper.m_InteractionActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_InteractionActionsCallbackInterfaces.Add(instance);
-            @Interact.started += instance.OnInteract;
-            @Interact.performed += instance.OnInteract;
-            @Interact.canceled += instance.OnInteract;
-            @Num1.started += instance.OnNum1;
-            @Num1.performed += instance.OnNum1;
-            @Num1.canceled += instance.OnNum1;
-            @Num2.started += instance.OnNum2;
-            @Num2.performed += instance.OnNum2;
-            @Num2.canceled += instance.OnNum2;
-            @Num3.started += instance.OnNum3;
-            @Num3.performed += instance.OnNum3;
-            @Num3.canceled += instance.OnNum3;
-            @Num4.started += instance.OnNum4;
-            @Num4.performed += instance.OnNum4;
-            @Num4.canceled += instance.OnNum4;
-            @Scroll.started += instance.OnScroll;
-            @Scroll.performed += instance.OnScroll;
-            @Scroll.canceled += instance.OnScroll;
-        }
-
-        private void UnregisterCallbacks(IInteractionActions instance)
-        {
-            @Interact.started -= instance.OnInteract;
-            @Interact.performed -= instance.OnInteract;
-            @Interact.canceled -= instance.OnInteract;
-            @Num1.started -= instance.OnNum1;
-            @Num1.performed -= instance.OnNum1;
-            @Num1.canceled -= instance.OnNum1;
-            @Num2.started -= instance.OnNum2;
-            @Num2.performed -= instance.OnNum2;
-            @Num2.canceled -= instance.OnNum2;
-            @Num3.started -= instance.OnNum3;
-            @Num3.performed -= instance.OnNum3;
-            @Num3.canceled -= instance.OnNum3;
-            @Num4.started -= instance.OnNum4;
-            @Num4.performed -= instance.OnNum4;
-            @Num4.canceled -= instance.OnNum4;
-            @Scroll.started -= instance.OnScroll;
-            @Scroll.performed -= instance.OnScroll;
-            @Scroll.canceled -= instance.OnScroll;
-        }
-
-        public void RemoveCallbacks(IInteractionActions instance)
-        {
-            if (m_Wrapper.m_InteractionActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(IInteractionActions instance)
-        {
-            foreach (var item in m_Wrapper.m_InteractionActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_InteractionActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public InteractionActions @Interaction => new InteractionActions(this);
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
-    }
-    public interface IInteractionActions
-    {
-        void OnInteract(InputAction.CallbackContext context);
-        void OnNum1(InputAction.CallbackContext context);
-        void OnNum2(InputAction.CallbackContext context);
-        void OnNum3(InputAction.CallbackContext context);
-        void OnNum4(InputAction.CallbackContext context);
-        void OnScroll(InputAction.CallbackContext context);
+        void OnInteraction(InputAction.CallbackContext context);
     }
 }

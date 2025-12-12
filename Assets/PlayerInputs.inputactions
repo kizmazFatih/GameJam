@@ -40,6 +40,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Interaction",
+                    "type": "Button",
+                    "id": "d07c464d-7839-4516-bd4d-5ec6e7cd9c80",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -130,132 +139,15 @@
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "Interaction",
-            "id": "ecf0b1bb-dce8-4c9d-bfc8-c351ace0b63a",
-            "actions": [
-                {
-                    "name": "Interact",
-                    "type": "Button",
-                    "id": "6d796712-b449-4a3f-82ca-baf329382ead",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 },
-                {
-                    "name": "Num1",
-                    "type": "Button",
-                    "id": "67b9729b-745b-43eb-9ac4-5871ad6fe905",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Num2",
-                    "type": "Button",
-                    "id": "e53f34b8-375c-439e-8e23-7f97f30a1193",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Num3",
-                    "type": "Button",
-                    "id": "3624e728-8beb-4b75-abc2-933c26e488ee",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Num4",
-                    "type": "Button",
-                    "id": "70eb0916-dc13-460c-bbba-9c172083d081",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Scroll",
-                    "type": "PassThrough",
-                    "id": "79be52f9-24fd-450b-b569-e3f77aa47f53",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
                 {
                     "name": "",
-                    "id": "d96cbfe1-1036-413e-8775-d2a12aa08e58",
+                    "id": "2bd09bf0-58dd-4c7f-96a2-65ea2d1fa82f",
                     "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Interact",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d4d7a825-f6ca-4dfb-8400-1ae7eb71b598",
-                    "path": "<Keyboard>/1",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Num1",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "402e2d4c-c132-4ad1-8828-084db656775c",
-                    "path": "<Keyboard>/2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Num2",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "5c923a08-16ea-4558-9727-498fa4119367",
-                    "path": "<Keyboard>/3",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Num3",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1ec02ea5-5a1e-4331-80c6-d33ec8808223",
-                    "path": "<Keyboard>/4",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Num4",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "c0fe236a-fd85-41dd-9e9c-05b840ecc917",
-                    "path": "<Mouse>/scroll",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Scroll",
+                    "action": "Interaction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
