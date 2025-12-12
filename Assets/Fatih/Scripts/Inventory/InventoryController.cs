@@ -132,6 +132,7 @@ public class InventoryController : MonoBehaviour
       for (int i = 0; i < player_inventory.slots.Count; i++)
       {
          if (player_inventory.slots[i].item == null) return false;
+         
          if (player_inventory.slots[i].item.player_skill == playerSkill)
          {
             return true;

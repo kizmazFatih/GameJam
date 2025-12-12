@@ -10,13 +10,5 @@ public class JumpSkill : MonoBehaviour, IInteractable
         Destroy(gameObject);
     }
 
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-
-    }
+   
 }
