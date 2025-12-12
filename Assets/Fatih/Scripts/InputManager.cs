@@ -19,7 +19,8 @@ public class InputManager : MonoBehaviour
         }
 
         playerInputs = new PlayerInputs();
-
+        
+        
     }
 
     private void OnEnable()

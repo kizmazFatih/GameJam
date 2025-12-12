@@ -31,15 +31,15 @@ public class InventoryController : MonoBehaviour
       {
          Destroy(gameObject);
       }
-      
+
       for (int i = 0; i < bottom_slots_parent.childCount; i++)
       {
          T_slots.Add(bottom_slots_parent.GetChild(i));
       }
 
-      
+
    }
-  
+
 
 
    public void UpdateSlotUI(int slot_index)
@@ -49,9 +49,10 @@ public class InventoryController : MonoBehaviour
          Instantiate(UI_prefab, T_slots[slot_index]);
       }
 
-      T_slots[slot_index].GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = player_inventory.slots[slot_index].amount.ToString();
+      //if(T_slots[slot_index].GetChild(0).GetChild(0) !=null )
+      //T_slots[slot_index].GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = player_inventory.slots[slot_index].amount.ToString();
 
-      T_slots[slot_index].GetChild(0).GetComponent<RawImage>().texture = player_inventory.slots[slot_index].item_image; 
+      T_slots[slot_index].GetChild(0).GetComponent<RawImage>().texture = player_inventory.slots[slot_index].item_image;
 
       //Handle.instance.SetHandlePrefab();
 
@@ -86,7 +87,7 @@ public class InventoryController : MonoBehaviour
 
       //Handle.instance.SetHandlePrefab();
    }
-  
+
    public void DeleteItem(int slot_index)
    {
       Destroy(T_slots[slot_index].transform.GetChild(0).gameObject);
@@ -97,25 +98,25 @@ public class InventoryController : MonoBehaviour
       player_inventory.slots[slot_index].item_image = null;
       player_inventory.slots[slot_index].prefab = null;
 
-     // Handle.instance.SetHandlePrefab();
+      // Handle.instance.SetHandlePrefab();
       UpdateSlotUI(slot_index);
 
    }
 
-    public void DecreaseItemAmount(int slot_index)
-    {
+   public void DecreaseItemAmount(int slot_index)
+   {
       player_inventory.slots[slot_index].amount--;
       if (player_inventory.slots[slot_index].amount == 0)
       {
          DeleteItem(slot_index);
       }
       UpdateSlotUI(slot_index);
-    }
-    public int FindMyIndex(Transform slot)
-    {
+   }
+   public int FindMyIndex(Transform slot)
+   {
       int x = T_slots.IndexOf(slot);
       return x;
-    }
+   }
 
    /* public void DropItem(int slot_index)
    {
@@ -125,13 +126,26 @@ public class InventoryController : MonoBehaviour
 
 
 
+   public bool CheckSkill(PlayerSkill playerSkill)
+   {
+
+      for (int i = 0; i < player_inventory.slots.Count; i++)
+      {
+         if (player_inventory.slots[i].item == null) return false;
+         if (player_inventory.slots[i].item.player_skill == playerSkill)
+         {
+            return true;
+         }
+      }
+      return false;
+
+   }
 
 
 
 
 
 
-  
 
 
 }
