@@ -1,161 +1,312 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
-    [Header("Gerekli Bileşenler")]
-    public AbilityManager abilityManager;
+    private bool _isExhausted = false;
 
-    [Header("Hız Ayarları")]
-    public float walkSpeed = 5.0f;
-    public float sprintSpeed = 9.0f;
-    public float crouchSpeed = 2.5f;
+    [Header("Stamina Settings")]
+    [SerializeField] private float maxStamina = 100f;
+    [SerializeField] private float staminaDrainRate = 15f;
+    [SerializeField] private float staminaRegenRate = 10f;
+    [SerializeField] private Slider staminaSlider;
 
-    [Header("Fizik Ayarları")]
-    public float jumpHeight = 1.5f;
-    public float gravity = -19.62f;
+    private float _currentStamina;
 
-    [Header("Eğilme (Crouch) Ayarları")]
-    public float standHeight = 2.0f;
-    public float crouchHeight = 1.0f;
-    public float crouchTransitionSpeed = 10f;
+    private CharacterController _characterController;
 
-    // --- Private Değişkenler ---
-    private CharacterController controller;
-    private PlayerInputs inputActions;
-    private Vector2 moveInput;
-    private Vector3 velocity;
-    private bool isGrounded;
-    private bool isSprinting;
-    private bool isCrouching;
+    [Header("Movement Speeds")]
+    [SerializeField] private float walkSpeed = 5.0f;
+    [SerializeField] private float sprintSpeed = 9.0f;
+    [SerializeField] private float crouchSpeed = 2.5f;
+
+    [Header("Dash Settings")]
+    [SerializeField] private float dashSpeed = 20.0f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1.0f;
+    [SerializeField] private float dashStaminaCost = 25f;
+    private bool _isDashing = false;
+    private float _lastDashTime;
+
+    private float _targetSpeed;
+
+    [Header("Jump Settings")]
+    [SerializeField] private float jumpHeight = 1.2f;
+    [SerializeField] private float gravityMultiplier = 3.0f;
+
+    [Header("Crouch Settings")]
+    [SerializeField] private float crouchHeight = 1.0f;
+    [SerializeField] private float standingHeight = 2.0f;
+    [SerializeField] private float crouchCenterY = 0.5f;
+    [SerializeField] private float standingCenterY = 0.0f;
+    private bool _isCrouching = false;
+
+    [Header("Smooth Settings")]
+    [SerializeField] private float smoothTime = 0.05f;
+
+    [Header("Slope & Slide Settings")]
+    [SerializeField] private float slideSpeed = 8.0f; // Kayma hızı
+    [SerializeField] private float slopeRayLength = 1.5f; // Eğim tespiti için ışın uzunluğu
+    [SerializeField] private float slopeForce = 5.0f; // Yere yapıştırma kuvveti
+
+    private float _currentVelocity;
+    private float _gravity = -9.81f;
+    private float _verticalVelocity;
+    
+    // Eğim tespiti için değişkenler
+    private Vector3 _hitNormal;
+    private bool _isSliding = false;
 
     private void Awake()
     {
-        controller = GetComponent<CharacterController>();
-        inputActions = new PlayerInputs();
+        _characterController = GetComponent<CharacterController>();
 
-        // --- INPUT TANIMLAMALARI ---
+        _characterController.height = standingHeight;
+        _characterController.center = new Vector3(0, standingCenterY, 0);
 
-        // Hareket (WASD)
-        inputActions.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Move.canceled += ctx => moveInput = Vector2.zero;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-        // Zıplama (Space)
-        inputActions.Player.Jump.performed += ctx => TryJump();
+        _lastDashTime = -dashCooldown;
 
-        // Koşma (Shift)
-        inputActions.Player.Sprint.performed += ctx => isSprinting = true;
-        inputActions.Player.Sprint.canceled += ctx => isSprinting = false;
-
-        // Eğilme (C)
-        inputActions.Player.Crouch.performed += ctx => isCrouching = true;
-        inputActions.Player.Crouch.canceled += ctx => isCrouching = false;
+        _currentStamina = maxStamina;
+        if (staminaSlider != null)
+        {
+            staminaSlider.maxValue = maxStamina;
+            staminaSlider.value = _currentStamina;
+        }
     }
-
-    private void OnEnable() => inputActions.Enable();
-    private void OnDisable() => inputActions.Disable();
 
     private void Update()
     {
-        float cameraYRotation = Camera.main.transform.eulerAngles.y;
+        ApplyRotation();
 
-        transform.rotation = Quaternion.Euler(0, cameraYRotation, 0);
+        // Eğimde kayıyor muyuz kontrol et
+        CheckSlopeLogic();
 
-        HandleGravity();
-        HandleMovement();
-        HandleCrouchState();
-    }
-
-    private void HandleGravity()
-    {
-        isGrounded = controller.isGrounded;
-
-        // Yerdeysek ve aşağı doğru hızlanıyorsak hızı sıfırla (hafif negatif tutarak yere yapıştır)
-        if (isGrounded && velocity.y < 0)
+        if (!_isDashing)
         {
-            velocity.y = -2f;
+            HandleStanceAndSpeed();
+            HandleDash();
         }
 
-        // Yerçekimi uygula (v = a * t)
-        velocity.y += gravity * Time.deltaTime;
-
-        // Yerçekimi hareketini uygula
-        controller.Move(velocity * Time.deltaTime);
+        ApplyGravity();
+        ApplyMovement();
     }
 
-    private void HandleMovement()
+    private void CheckSlopeLogic()
     {
-        // 1. Yetenek Kontrolü: MOVE
-        // Eğer Move yeteneği envanterde yoksa input gelse bile hareket 0 olur.
-        if (abilityManager != null && !abilityManager.CanUse(MovementType.Move))
+        // Karakterin altındaki zemine bir ışın (Raycast) gönderiyoruz
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, slopeRayLength))
         {
-            // Hareket yok
-            return;
-        }
+            _hitNormal = hitInfo.normal;
+            
+            // Zemin açısını hesapla
+            float slopeAngle = Vector3.Angle(Vector3.up, _hitNormal);
 
-        // Hız belirleme
-        float currentSpeed = walkSpeed;
-
-        // 2. Yetenek Kontrolü: SPRINT
-        if (isSprinting && !isCrouching) // Eğilirken koşulmaz
-        {
-            if (abilityManager == null || abilityManager.CanUse(MovementType.Sprint))
+            // Eğer açı, CharacterController'ın limitinden büyükse kaymaya başla
+            if (slopeAngle > _characterController.slopeLimit && slopeAngle < 80f) // 80f çok dik duvarlar için koruma
             {
-                currentSpeed = sprintSpeed;
+                _isSliding = true;
+            }
+            else
+            {
+                _isSliding = false;
+            }
+        }
+        else
+        {
+            _isSliding = false;
+            _hitNormal = Vector3.up;
+        }
+    }
+
+    private void HandleDash()
+    {
+        // Kayarken dash atmayı engelleyebiliriz (isteğe bağlı), şimdilik açık bırakıyorum.
+        bool dashInput = false;
+        
+        // Input Manager null kontrolü eklemek iyi bir alışkanlıktır
+        if(InputManager.instance != null)
+             dashInput = InputManager.instance.playerInputs.Player.Dash.WasPressedThisFrame();
+
+        if (dashInput &&
+            Time.time >= _lastDashTime + dashCooldown &&
+            InventoryController.instance.CheckSkill(PlayerSkill.Dash) &&
+            !_isExhausted &&
+            _currentStamina >= dashStaminaCost)
+        {
+            StartCoroutine(PerformDash());
+        }
+    }
+
+    private IEnumerator PerformDash()
+    {
+        _currentStamina -= dashStaminaCost;
+
+        if (_currentStamina <= 0)
+        {
+            _currentStamina = 0;
+            _isExhausted = true;
+        }
+
+        if (staminaSlider != null) staminaSlider.value = _currentStamina;
+
+        _isDashing = true;
+        _lastDashTime = Time.time;
+
+        yield return new WaitForSeconds(dashDuration);
+
+        _isDashing = false;
+    }
+
+    private void HandleStanceAndSpeed()
+    {
+        // InputManager kontrolleri
+        if (InputManager.instance == null) return;
+
+        bool isSprinting = InputManager.instance.playerInputs.Player.Sprint.IsPressed();
+        bool isCrouchingInput = InputManager.instance.playerInputs.Player.Crouch.IsPressed();
+
+        Vector2 inputVector = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
+        bool isMoving = inputVector.magnitude > 0.1f;
+
+        if (isCrouchingInput && !_isCrouching && InventoryController.instance.CheckSkill(PlayerSkill.Crouch))
+        {
+            _isCrouching = true;
+            _characterController.height = crouchHeight;
+            _characterController.center = new Vector3(0, crouchCenterY, 0);
+        }
+        else if (!isCrouchingInput && _isCrouching)
+        {
+            _isCrouching = false;
+            _characterController.height = standingHeight;
+            _characterController.center = new Vector3(0, standingCenterY, 0);
+        }
+
+        if (_currentStamina <= 0)
+        {
+            _isExhausted = true;
+            _currentStamina = 0;
+        }
+        else if (_currentStamina >= 20f)
+        {
+            _isExhausted = false;
+        }
+
+        if (_isCrouching)
+        {
+            _targetSpeed = crouchSpeed;
+            RegenerateStamina();
+        }
+        else if (isSprinting && isMoving && !_isExhausted && _currentStamina > 0 && InventoryController.instance.CheckSkill(PlayerSkill.Sprint))
+        {
+            _targetSpeed = sprintSpeed;
+            _currentStamina -= staminaDrainRate * Time.deltaTime;
+        }
+        else
+        {
+            _targetSpeed = walkSpeed;
+            RegenerateStamina();
+        }
+
+        _currentStamina = Mathf.Clamp(_currentStamina, 0, maxStamina);
+
+        if (staminaSlider != null)
+        {
+            staminaSlider.value = _currentStamina;
+        }
+    }
+
+    private void RegenerateStamina()
+    {
+        if (_currentStamina < maxStamina)
+        {
+            _currentStamina += staminaRegenRate * Time.deltaTime;
+        }
+    }
+
+    private void ApplyGravity()
+    {
+        bool jumpInput = false;
+        if(InputManager.instance != null) 
+            jumpInput = InputManager.instance.playerInputs.Player.Jump.WasPressedThisFrame();
+
+        // Yerçekimi ve Zıplama Mantığı
+        if (_characterController.isGrounded)
+        {
+            // Yere tam basarken hafif bir aşağı kuvvet uyguluyoruz ki isGrounded titremesin
+            // Ancak zıplarken bu kuvveti anında yeneceğiz
+            if (_verticalVelocity < 0.0f)
+            {
+                _verticalVelocity = -2.0f; 
+            }
+
+            // Kayma durumunda zıplamayı engellemek istersen && !_isSliding ekleyebilirsin.
+            // Ama şimdilik oyuncunun zıplayabilmesini istiyorsun.
+            if (jumpInput && InventoryController.instance.CheckSkill(PlayerSkill.Jump))
+            {
+                // Zıplama formülü: v = sqrt(h * -2 * g)
+                _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * _gravity * gravityMultiplier);
             }
         }
 
-        // 3. Yetenek Kontrolü: CROUCH (Hız etkisi)
-        if (isCrouching)
-        {
-            if (abilityManager == null || abilityManager.CanUse(MovementType.Crouch))
-            {
-                currentSpeed = crouchSpeed;
-            }
-        }
-
-        // Hareket Vektörü (Local Space -> World Space)
-        // transform.right ve forward kullandığımız için karakter nereye dönükse oraya gider.
-        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-
-        // Hareketi uygula
-        controller.Move(move * currentSpeed * Time.deltaTime);
+        // Yerçekimini uygula
+        _verticalVelocity += _gravity * gravityMultiplier * Time.deltaTime;
     }
 
-    private void TryJump()
+    private void ApplyRotation()
     {
-        // Yerde değilsek zıplayamayız
-        if (!isGrounded) return;
-
-        // 4. Yetenek Kontrolü: JUMP
-        if (abilityManager != null && !abilityManager.CanUse(MovementType.Jump))
+        if (Camera.main != null)
         {
-            // Zıplama yeteneği yok! (Buraya hata sesi ekleyebilirsin)
-            return;
+            var targetAngle = Camera.main.transform.eulerAngles.y;
+            var angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _currentVelocity, smoothTime);
+            transform.rotation = Quaternion.Euler(0.0f, angle, 0.0f);
         }
-
-        // Fizik Formülü: v = sqrt(h * -2 * g)
-        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
     }
 
-    private void HandleCrouchState()
+    private void ApplyMovement()
     {
-        // Yetenek var mı?
-        bool canCrouch = abilityManager == null || abilityManager.CanUse(MovementType.Crouch);
+        Vector2 input = Vector2.zero;
+        if (InputManager.instance != null)
+            input = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
 
-        // Hedef yükseklik
-        float targetHeight = (canCrouch && isCrouching) ? crouchHeight : standHeight;
+        if (InventoryController.instance.CheckSkill(PlayerSkill.Vertical) == false) input.y = 0f;
+        if (InventoryController.instance.CheckSkill(PlayerSkill.Horizontal) == false) input.x = 0f;
 
-        // Boyu yumuşakça değiştir
-        if (Mathf.Abs(controller.height - targetHeight) > 0.01f)
+        Vector3 inputDirection = (transform.right * input.x + transform.forward * input.y).normalized;
+        float currentTargetSpeed = _targetSpeed; // Yürüyüş, Koşu veya Eğilme hızı
+        
+        Vector3 finalMoveVelocity = inputDirection * currentTargetSpeed;
+
+        // 2. Kayma Fiziği (Slide)
+        if (_isSliding)
         {
-            controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
+            // Kayma yönünü hesapla
+            Vector3 slideDirection = new Vector3(_hitNormal.x, -_hitNormal.y, _hitNormal.z);
+            Vector3.OrthoNormalize(ref _hitNormal, ref slideDirection);
 
-            // Karakterin pivot noktası genelde altta değil ortada olabilir, 
-            // yere gömülmemesi veya havada kalmaması için Center noktasını da orantılı kaydırıyoruz.
-            Vector3 targetCenter = new Vector3(0, targetHeight / 2f, 0);
-            controller.center = Vector3.Lerp(controller.center, targetCenter, Time.deltaTime * crouchTransitionSpeed);
+            // ÖNEMLİ: Oyuncunun hareketine zıt yönde veya aşağı doğru bir "çekim" kuvveti ekliyoruz.
+            // Bu sayede Sprint (9.0f) hızı, Kayma (örn: 6.0f) hızından büyükse oyuncu yukarı tırmanabilir.
+            finalMoveVelocity += slideDirection * slideSpeed;
         }
+
+        // 3. Dash (Atılma) Kontrolü
+        if (_isDashing)
+        {
+            // Dash atarken kayma fiziğini yok sayıyoruz ki oyuncu kaçabilsin
+            Vector3 dashMove = finalMoveVelocity.normalized;
+            if (dashMove.magnitude < 0.1f) dashMove = transform.forward;
+            finalMoveVelocity = dashMove * dashSpeed;
+        }
+
+        // 4. Yerçekimi ve Dikey Hızın Eklenmesi
+        finalMoveVelocity.y = _verticalVelocity;
+
+        // 5. Son Hareketi Uygula
+        _characterController.Move(finalMoveVelocity * Time.deltaTime);
     }
 }
