@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070c20fe7fcae9f43878d80b59544b9a, type: 3}
   m_Name: Crouch
   m_EditorClassIdentifier: 
-  isPlaceable: 0
-  my_image: {fileID: 0}
-  my_prefab: {fileID: 0}
-  my_amount: 0
-  max_stack: 0
+  skillName: Crouch
+  pickupMessage: "E\u011Fil"
+  player_skill: 4
+  my_image: {fileID: 2800000, guid: ab1258a2f840aea42beef00026bbe9ba, type: 3}
+  my_prefab: {fileID: 2118118698033633329, guid: 7f714aa10a6227243b9dd86a77b6ec8c, type: 3}
+  my_amount: 1
+  max_stack: 1

@@ -9,7 +9,7 @@ public class Handle : MonoBehaviour
 {
     public static Handle instance;
 
-    private int index;
+    public int index;
 
 
     private MeshRenderer meshrenderer;
@@ -62,6 +62,8 @@ public class Handle : MonoBehaviour
         playerInputs.Interaction.Num4.performed += _ => SelectSlot(3);
 
         playerInputs.Interaction.Scroll.performed += OnScroll;
+
+        playerInputs.Interaction.Drop.performed += _ => OnDropItem();
     }
     void Update()
     {
@@ -88,7 +90,7 @@ public class Handle : MonoBehaviour
         meshrenderer.material = prefab.GetComponent<MeshRenderer>().sharedMaterial;
         PlaceableVisual(prefab);
 
-     
+
 
 
 
@@ -156,6 +158,7 @@ public class Handle : MonoBehaviour
 
 
 
+
     #endregion
 
 
@@ -171,11 +174,8 @@ public class Handle : MonoBehaviour
         index = value;
         SetHandlePrefab();
 
-        for (int i = 0; i < 4; i++)
-        {
-            InventoryController.instance.T_slots[i].GetComponent<RawImage>().texture = oldTexture;
-        }
-        InventoryController.instance.T_slots[index].GetComponent<RawImage>().texture = newTexture;
+        SelectedSlotUI();
+
     }
 
     private void OnScroll(InputAction.CallbackContext ctx)
@@ -195,6 +195,20 @@ public class Handle : MonoBehaviour
                 index = InventoryController.instance.player_inventory.slots.Count - 1;
         }
         SetHandlePrefab();
+        SelectedSlotUI();
+    }
+    void OnDropItem()
+    {
+        InventoryController.instance.DropItem(index);
+    }
+
+    void SelectedSlotUI()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            InventoryController.instance.T_slots[i].GetComponent<RawImage>().texture = oldTexture;
+        }
+        InventoryController.instance.T_slots[index].GetComponent<RawImage>().texture = newTexture;
     }
 
     #endregion
