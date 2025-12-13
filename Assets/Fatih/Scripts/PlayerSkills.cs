@@ -5,5 +5,7 @@ public enum PlayerSkill
     Horizontal, 
     Sprint, 
     Jump,
-    Crouch
+    Crouch,
+    Dash
+
 }

@@ -1,9 +1,21 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections; 
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
+    private bool _isExhausted = false;
+
+    [Header("Stamina Settings")]
+    [SerializeField] private float maxStamina = 100f;       
+    [SerializeField] private float staminaDrainRate = 15f;  
+    [SerializeField] private float staminaRegenRate = 10f;  
+    [SerializeField] private Slider staminaSlider;          
+    
+    private float _currentStamina;
+
     private CharacterController _characterController;
 
     [Header("Movement Speeds")]
@@ -11,7 +23,15 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float sprintSpeed = 9.0f;
     [SerializeField] private float crouchSpeed = 2.5f;
 
-    // Anlık hızı takip etmek için private değişken
+   
+    [Header("Dash Settings")]
+    [SerializeField] private float dashSpeed = 20.0f; 
+    [SerializeField] private float dashDuration = 0.2f; 
+    [SerializeField] private float dashCooldown = 1.0f; 
+    private bool _isDashing = false; 
+    private float _lastDashTime; 
+    
+
     private float _targetSpeed;
 
     [Header("Jump Settings")]
@@ -25,11 +45,9 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float standingCenterY = 0.0f;
     private bool _isCrouching = false;
 
-
     [Header("Smooth Settings")]
     [SerializeField] private float smoothTime = 0.05f;
 
-    // Fizik Değişkenleri
     private float _currentVelocity;
     private float _gravity = -9.81f;
     private float _verticalVelocity;
@@ -38,92 +56,152 @@ public class FPSController : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
 
-        // Başlangıç boyunu ayarla
         _characterController.height = standingHeight;
         _characterController.center = new Vector3(0, standingCenterY, 0);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
+        _lastDashTime = -dashCooldown; 
+
+        _currentStamina = maxStamina; 
+        if (staminaSlider != null) 
+        {
+            staminaSlider.maxValue = maxStamina;
+            staminaSlider.value = _currentStamina;
+        }
     }
 
     private void Update()
     {
         ApplyRotation();
-        HandleStanceAndSpeed(); // Eğilme ve Hız belirleme
+        
+        if (!_isDashing) 
+        {
+            HandleStanceAndSpeed();
+            HandleDash(); // Dash inputunu kontrol et
+        }
+        
         ApplyGravity();
         ApplyMovement();
     }
 
+    private void HandleDash()
+    {
+        
+        bool dashInput = false;
+        try {
+             dashInput = InputManager.instance.playerInputs.Player.Dash.WasPressedThisFrame();
+        } catch { 
+             dashInput = Keyboard.current.leftShiftKey.wasPressedThisFrame; 
+        }
+
+        if (dashInput && Time.time >= _lastDashTime + dashCooldown && InventoryController.instance.CheckSkill(PlayerSkill.Dash)) // PlayerSkill.Dash enum'ına eklemelisin!
+        {
+            StartCoroutine(PerformDash());
+        }
+    }
+
+    private IEnumerator PerformDash()
+    {
+        _isDashing = true;
+        _lastDashTime = Time.time;
+        
+        yield return new WaitForSeconds(dashDuration);
+
+        _isDashing = false;
+        
+    }
+  
+
     private void HandleStanceAndSpeed()
     {
-        // 1. INPUTLARI OKU
-        // Not: Input System Asset'inde "Sprint" ve "Crouch" action'larını tanımlamış olmalısın.
-        // Genelde: Sprint -> Left Shift, Crouch -> C veya Left Ctrl
-
-        // Input Manager'dan gelen veriler (Senin yapına uygun şekilde)
         bool isSprinting = InputManager.instance.playerInputs.Player.Sprint.IsPressed();
         bool isCrouchingInput = InputManager.instance.playerInputs.Player.Crouch.IsPressed();
 
+        Vector2 inputVector = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
+        bool isMoving = inputVector.magnitude > 0.1f;
 
-        // 2. EĞİLME MANTIĞI (CROUCH)
         if (isCrouchingInput && !_isCrouching && InventoryController.instance.CheckSkill(PlayerSkill.Crouch))
         {
-            // Eğilmeye başla
             _isCrouching = true;
             _characterController.height = crouchHeight;
             _characterController.center = new Vector3(0, crouchCenterY, 0);
         }
         else if (!isCrouchingInput && _isCrouching)
         {
-            // Ayağa kalk (İstersen buraya tavana çarpıyor mu kontrolü eklenebilir)
             _isCrouching = false;
             _characterController.height = standingHeight;
             _characterController.center = new Vector3(0, standingCenterY, 0);
         }
 
-        // 3. HIZ BELİRLEME (Priority: Crouch > Sprint > Walk)
+        if (_currentStamina <= 0)
+        {
+            _isExhausted = true;
+            _currentStamina = 0; 
+        }
+        
+        else if (_currentStamina >= 20f) 
+        {
+            _isExhausted = false;
+        }
+
         if (_isCrouching)
         {
             _targetSpeed = crouchSpeed;
+            RegenerateStamina();
         }
-        else if (isSprinting && InventoryController.instance.CheckSkill(PlayerSkill.Sprint))
+        else if (isSprinting && isMoving && !_isExhausted && _currentStamina > 0 && InventoryController.instance.CheckSkill(PlayerSkill.Sprint))
         {
             _targetSpeed = sprintSpeed;
+
+            _currentStamina -= staminaDrainRate * Time.deltaTime;
         }
         else
         {
             _targetSpeed = walkSpeed;
+
+            RegenerateStamina();
+        }
+
+        _currentStamina = Mathf.Clamp(_currentStamina, 0, maxStamina);
+
+        if (staminaSlider != null)
+        {
+            staminaSlider.value = _currentStamina;
+        }
+    }
+
+    private void RegenerateStamina()
+    {
+        if (_currentStamina < maxStamina)
+        {
+            _currentStamina += staminaRegenRate * Time.deltaTime;
         }
     }
 
     private void ApplyGravity()
     {
-        // Zıplama Input'u (Space tuşu)
         bool jumpInput = InputManager.instance.playerInputs.Player.Jump.WasPressedThisFrame();
 
         if (_characterController.isGrounded && InventoryController.instance.CheckSkill(PlayerSkill.Jump))
         {
-            // Yere bastığında vertical velocity'yi sıfırla (hafif eksi bırakıyoruz ki yere tam bassın)
             if (_verticalVelocity < 0.0f)
             {
                 _verticalVelocity = -2.0f;
             }
 
-            // ZIPLAMA MANTIĞI
             if (jumpInput)
             {
-                // Fizik Formülü: v = karekök(h * -2 * g)
                 _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * _gravity * gravityMultiplier);
             }
         }
 
-        // Yerçekimi uygula
         _verticalVelocity += _gravity * gravityMultiplier * Time.deltaTime;
     }
 
     private void ApplyRotation()
     {
-
         if (Camera.main != null)
         {
             var targetAngle = Camera.main.transform.eulerAngles.y;
@@ -136,14 +214,25 @@ public class FPSController : MonoBehaviour
     {
         Vector2 input = InputManager.instance.playerInputs.Player.Move.ReadValue<Vector2>();
 
-        // Filtreleme
         if (InventoryController.instance.CheckSkill(PlayerSkill.Vertical) == false) input.y = 0f;
         if (InventoryController.instance.CheckSkill(PlayerSkill.Horizontal) == false) input.x = 0f;
 
         Vector3 move = (transform.right * input.x) + (transform.forward * input.y);
 
-        // Hızı _targetSpeed ile çarpıyoruz
-        Vector3 finalMovement = (move * _targetSpeed) + (Vector3.up * _verticalVelocity);
+        float currentSpeed;
+        
+        if (_isDashing)
+        {
+            if (move.magnitude < 0.1f) move = transform.forward;
+            
+            currentSpeed = dashSpeed;
+        }
+        else
+        {
+            currentSpeed = _targetSpeed;
+        }
+
+        Vector3 finalMovement = (move.normalized * currentSpeed) + (Vector3.up * _verticalVelocity);
 
         _characterController.Move(finalMovement * Time.deltaTime);
     }
