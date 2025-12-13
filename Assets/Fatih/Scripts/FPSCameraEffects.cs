@@ -5,7 +5,7 @@ public class FPSCameraEffects : MonoBehaviour
 {
     [Header("Referanslar")]
     public CharacterController playerController;
-    public CinemachineVirtualCamera virtualCamera; 
+    public CinemachineVirtualCamera virtualCamera;
     public Transform cameraRoot; // Kafa sallantısı için boş obje (Player'ın içinde)
 
     [Header("Efektler")]
@@ -32,7 +32,7 @@ public class FPSCameraEffects : MonoBehaviour
     {
         if (cameraRoot != null) _defaultYPos = cameraRoot.localPosition.y;
         if (virtualCamera != null) virtualCamera.m_Lens.FieldOfView = baseFOV;
-        
+
         // Başlangıçta rüzgar efekti varsa durdur
         if (speedLines != null && speedLines.isPlaying) speedLines.Stop();
     }
@@ -83,10 +83,10 @@ public class FPSCameraEffects : MonoBehaviour
 
         if (speed > defaultSpeed + 1f)
         {
-            if (!speedLines.isPlaying) 
+            if (!speedLines.isPlaying)
             {
                 speedLines.Play();
-                 Debug.Log("Efekt BAŞLADI!"); // Bunu görüyorsan kod çalışıyordur.
+                Debug.Log("Efekt BAŞLADI!"); // Bunu görüyorsan kod çalışıyordur.
             }
         }
         else
