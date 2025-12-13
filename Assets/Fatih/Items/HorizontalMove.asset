@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Horizontal
   pickupMessage: "Yenge\xE7\n"
   player_skill: 1
-  my_image: {fileID: 2800000, guid: a0fc465d6cf04254a2938578735e2383, type: 3}
-  my_prefab: {fileID: 2118118698033633329, guid: 33411044c2605b6408f81e73849eea1e, type: 3}
+  my_image: {fileID: 2800000, guid: 891db9d7563ad034eb798fecb1ce4274, type: 3}
+  my_prefab: {fileID: 2118118698033633329, guid: 09e4600675f92a34a9172c288f5695f1, type: 3}
   my_amount: 1
   max_stack: 1

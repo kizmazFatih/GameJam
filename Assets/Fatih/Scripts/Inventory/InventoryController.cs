@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
+using UnityEngine.XR;
 
 public class InventoryController : MonoBehaviour
 {
     public static InventoryController instance;
     public SOInventory player_inventory;
-    
+
     [SerializeField] private Transform bottom_slots_parent;
     public List<Transform> T_slots = new List<Transform>();
     public GameObject UI_prefab;
@@ -31,12 +33,12 @@ public class InventoryController : MonoBehaviour
         {
             if (player_inventory.slots[i].isFull && player_inventory.slots[i].item == null)
             {
-               DeleteItem(i);
+                DeleteItem(i);
             }
 
             else if (player_inventory.slots[i].isFull && player_inventory.slots[i].item != null)
             {
-               UpdateSlotUI(i); 
+                UpdateSlotUI(i);
             }
         }
     }
@@ -82,6 +84,8 @@ public class InventoryController : MonoBehaviour
         player_inventory.slots[y].item = temple.item;
         player_inventory.slots[y].item_image = temple.item_image;
         player_inventory.slots[y].prefab = temple.prefab;
+
+        Handle.instance.SetHandlePrefab();
     }
 
     public void DeleteItem(int slot_index)
@@ -101,6 +105,20 @@ public class InventoryController : MonoBehaviour
             player_inventory.slots[slot_index].item_image = null;
             player_inventory.slots[slot_index].prefab = null;
         }
+        Handle.instance.SetHandlePrefab();
+    }
+
+    public void DropItem(int slot_index)
+    {
+        if (slot_index < 0 || slot_index >= T_slots.Count) return;
+        if (player_inventory.slots[slot_index].prefab == null) return;
+
+        var spawnObject = player_inventory.slots[slot_index].prefab;
+        DeleteItem(slot_index);
+        var spawnedObject = Instantiate(spawnObject, transform.position + (Vector3.up * 2), Quaternion.identity);
+        spawnedObject.GetComponent<Rigidbody>().AddForce(transform.forward * 5f, ForceMode.Impulse);
+        Handle.instance.SetHandlePrefab();
+
     }
 
     public void DecreaseItemAmount(int slot_index)
@@ -127,7 +145,7 @@ public class InventoryController : MonoBehaviour
 
         for (int i = 0; i < player_inventory.slots.Count; i++)
         {
-           
+
             if (player_inventory.slots[i].isFull && player_inventory.slots[i].item != null)
             {
                 skillSlotIndices.Add(i);
@@ -145,17 +163,29 @@ public class InventoryController : MonoBehaviour
 
         string stolenSkillName = player_inventory.slots[slotToDelete].item?.skillName ?? "Bilinmeyen Yetenek";
 
-        DeleteItem(slotToDelete);
+        StartCoroutine(StanSkill(slotToDelete));
 
-        Debug.Log($"DİKKAT! Örümcek '{stolenSkillName}' yeteneğini sildi!");
+
+        Debug.Log($"DİKKAT! Örümcek '{stolenSkillName}' yeteneğini 10 saniyeliğine etkisiz bıraktı!");
     }
+
+    IEnumerator StanSkill(int slotIndex)
+    {
+        var stannedItem = player_inventory.slots[slotIndex].item;
+        DeleteItem(slotIndex);
+
+        yield return new WaitForSeconds(10f);
+        player_inventory.AddItem(stannedItem, player_inventory.slots[slotIndex].amount);
+
+    }
+
 
     public bool CheckSkill(PlayerSkill playerSkill)
     {
         for (int i = 0; i < player_inventory.slots.Count; i++)
         {
-            if (!player_inventory.slots[i].isFull || player_inventory.slots[i].item == null) 
-                continue; 
+            if (!player_inventory.slots[i].isFull || player_inventory.slots[i].item == null)
+                continue;
 
             if (player_inventory.slots[i].item.player_skill == playerSkill)
             {

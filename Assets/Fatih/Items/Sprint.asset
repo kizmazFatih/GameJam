@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Sprint
   pickupMessage: "Ko\u015F"
   player_skill: 2
-  my_image: {fileID: 2800000, guid: dffef66376be4fa480fb02b19edbe903, type: 3}
-  my_prefab: {fileID: 2118118698033633329, guid: 33411044c2605b6408f81e73849eea1e, type: 3}
+  my_image: {fileID: 2800000, guid: 3f5487b7a257b3b46b46009b3d181b97, type: 3}
+  my_prefab: {fileID: 2118118698033633329, guid: 4053488ab3362b94992b7c1b7e8653b8, type: 3}
   my_amount: 1
   max_stack: 1

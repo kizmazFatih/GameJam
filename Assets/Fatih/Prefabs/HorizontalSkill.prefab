@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 7103932404205535743}
   - component: {fileID: 4520094378676480589}
   - component: {fileID: 2754338652053250972}
-  - component: {fileID: 3904595787540754679}
+  - component: {fileID: -3530048717322789787}
   m_Layer: 0
-  m_Name: JumpSkill
+  m_Name: HorizontalSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -119,8 +119,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1aabf16c69ffa44fbe380cd4e215870, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: bfd70a3547803e64baa176a817086da1, type: 2}
---- !u!54 &3904595787540754679
+  item: {fileID: 11400000, guid: 561295ffd5c22f4498d79d6b4c6a2b72, type: 2}
+--- !u!54 &-3530048717322789787
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
