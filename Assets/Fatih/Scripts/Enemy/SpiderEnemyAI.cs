@@ -4,7 +4,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class SpiderEnemyAI : MonoBehaviour
 {
-    private bool hasExploded = false; 
+    private bool hasExploded = false;
     private NavMeshAgent agent;
     private Transform player;
 
@@ -22,6 +22,7 @@ public class SpiderEnemyAI : MonoBehaviour
 
     private enum State { Patrol, Chase, Attack }
     private State currentState;
+    [SerializeField] private GameObject explosionPrefab;
 
     private void Awake()
     {
@@ -50,7 +51,7 @@ public class SpiderEnemyAI : MonoBehaviour
                 ChaseLogic();
                 break;
             case State.Attack:
-                ExplodeAndSteal(); 
+                ExplodeAndSteal();
                 break;
         }
     }
@@ -111,13 +112,22 @@ public class SpiderEnemyAI : MonoBehaviour
 
     public void ExplodeAndSteal()
     {
-        
+
         if (hasExploded) return;
 
         hasExploded = true;
+        if (explosionPrefab != null)
+        {
+            GameObject fx = Instantiate(explosionPrefab, transform.position, transform.rotation);
 
-        agent.isStopped = true; 
+            // Efekti 5 saniye sonra sahneden temizle (Performans için)
+            Destroy(fx, 5f);
+        }
+
+        agent.isStopped = true;
         agent.velocity = Vector3.zero;
+
+
 
         if (InventoryController.instance != null)
         {
