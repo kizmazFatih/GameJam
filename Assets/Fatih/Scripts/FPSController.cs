@@ -28,6 +28,7 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float dashSpeed = 20.0f; 
     [SerializeField] private float dashDuration = 0.2f; 
     [SerializeField] private float dashCooldown = 1.0f; 
+    [SerializeField] private float dashStaminaCost = 25f;
     private bool _isDashing = false; 
     private float _lastDashTime; 
     
@@ -96,7 +97,11 @@ public class FPSController : MonoBehaviour
              dashInput = Keyboard.current.leftShiftKey.wasPressedThisFrame; 
         }
 
-        if (dashInput && Time.time >= _lastDashTime + dashCooldown && InventoryController.instance.CheckSkill(PlayerSkill.Dash)) // PlayerSkill.Dash enum'ına eklemelisin!
+        if (dashInput && 
+            Time.time >= _lastDashTime + dashCooldown && 
+            InventoryController.instance.CheckSkill(PlayerSkill.Dash) &&
+            !_isExhausted &&                 
+            _currentStamina >= dashStaminaCost) 
         {
             StartCoroutine(PerformDash());
         }
@@ -104,13 +109,22 @@ public class FPSController : MonoBehaviour
 
     private IEnumerator PerformDash()
     {
+        _currentStamina -= dashStaminaCost; 
+
+        if (_currentStamina <= 0)
+        {
+            _currentStamina = 0;
+            _isExhausted = true;
+        }
+
+        if (staminaSlider != null) staminaSlider.value = _currentStamina;
+    
         _isDashing = true;
         _lastDashTime = Time.time;
-        
+
         yield return new WaitForSeconds(dashDuration);
 
         _isDashing = false;
-        
     }
   
 
