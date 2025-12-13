@@ -7,5 +7,4 @@ public enum PlayerSkill
     Jump,
     Crouch,
     Dash
-
 }
