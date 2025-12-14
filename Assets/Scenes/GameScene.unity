@@ -1319,7 +1319,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa74378e33bc62f40967e94fcb1a535d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraEffects: {fileID: 0}
+  cameraEffects: {fileID: 739111949}
   maxStamina: 100
   staminaDrainRate: 15
   staminaRegenRate: 10
@@ -1455,8 +1455,8 @@ MonoBehaviour:
     m_ImpulseType: 3
     m_DissipationRate: 0.25
     m_RawSignal: {fileID: 11400000, guid: 53798b623afa3c848b4f80e2ef32bc04, type: 2}
-    m_AmplitudeGain: 1
-    m_FrequencyGain: 1
+    m_AmplitudeGain: 0.2
+    m_FrequencyGain: 0.3
     m_RepeatMode: 0
     m_Randomize: 1
     m_TimeEnvelope:
@@ -2023,7 +2023,7 @@ Camera:
     height: 1
   near clip plane: 0.01
   far clip plane: 1000
-  field of view: 60.00019
+  field of view: 60.00001
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -2338,7 +2338,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 242544515}
   m_Follow: {fileID: 242544515}
   m_Lens:
-    FieldOfView: 60.00019
+    FieldOfView: 60.00001
     OrthographicSize: 5
     NearClipPlane: 0.01
     FarClipPlane: 1000
