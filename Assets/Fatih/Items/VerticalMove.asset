@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VerticalMove
   m_EditorClassIdentifier: 
   skillName: Vertical
-  pickupMessage: "\u0130leri Geri"
+  pickupMessage: "\u0130leri Geri (W-S)"
   player_skill: 0
   my_image: {fileID: 2800000, guid: 538e616a0779f6540bbfdc9119b24746, type: 3}
   my_prefab: {fileID: 2118118698033633329, guid: 7aac495a924861740a170c49943c31b2, type: 3}

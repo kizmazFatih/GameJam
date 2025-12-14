@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Jump
   m_EditorClassIdentifier: 
   skillName: Jump
-  pickupMessage: "Z\u0131pla"
+  pickupMessage: "Z\u0131pla (SPACE)"
   player_skill: 3
   my_image: {fileID: 2800000, guid: 09e36bac1defc0644bbbfa29b486f9e7, type: 3}
   my_prefab: {fileID: 2118118698033633329, guid: 33411044c2605b6408f81e73849eea1e, type: 3}

@@ -8,6 +8,7 @@ public class Skill : MonoBehaviour, IInteractable
     {
         InventoryController.instance.player_inventory.AddItem(item, item.my_amount);
         SkillTooltipManager.Instance.HideTooltip();
+        Handle.instance.SetHandlePrefab();
         Destroy(gameObject);
     }
 

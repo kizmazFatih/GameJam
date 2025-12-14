@@ -1,15 +1,17 @@
 using UnityEngine;
 using Cinemachine;
 
+[RequireComponent(typeof(CinemachineImpulseSource))] // Bu satır objeye otomatik bileşen ekler
 public class FPSCameraEffects : MonoBehaviour
 {
     [Header("Referanslar")]
     public CharacterController playerController;
     public CinemachineVirtualCamera virtualCamera;
-    public Transform cameraRoot; // Kafa sallantısı için boş obje (Player'ın içinde)
+    public Transform cameraRoot;
 
     [Header("Efektler")]
-    public ParticleSystem speedLines; // Rüzgar çizgileri efekti (Main Camera'nın içindeki)
+    public ParticleSystem speedLines;
+    [SerializeField] private CinemachineImpulseSource _impulseSource; // Sarsıntı kaynağı
 
     [Header("Hız Ayarları")]
     public float defaultSpeed = 5.0f;
@@ -30,10 +32,10 @@ public class FPSCameraEffects : MonoBehaviour
 
     private void Start()
     {
+
         if (cameraRoot != null) _defaultYPos = cameraRoot.localPosition.y;
         if (virtualCamera != null) virtualCamera.m_Lens.FieldOfView = baseFOV;
 
-        // Başlangıçta rüzgar efekti varsa durdur
         if (speedLines != null && speedLines.isPlaying) speedLines.Stop();
     }
 
@@ -46,7 +48,19 @@ public class FPSCameraEffects : MonoBehaviour
 
         HandleFOV(currentSpeed);
         HandleHeadBob(currentSpeed);
-        HandleSpeedLines(currentSpeed); // Yeni eklenen kısım
+        HandleSpeedLines(currentSpeed);
+    }
+
+    // --- YENİ EKLENEN FONKSİYON: KAMERA SARSINTISI ---
+    public void ShakeCamera(float force = 1f)
+    {
+        // Kameraya bir "dürtme" (Impulse) gönderir
+        if (_impulseSource != null)
+        {
+            // Vector3.down * force: Kamera hafifçe aşağı ve rastgele titrer (vuruş hissi için)
+            // Velocity parametresi sarsıntının yönünü ve şiddetini belirler.
+            _impulseSource.GenerateImpulse(new Vector3(Random.Range(-0.5f, 0.5f), -1f, 0) * force);
+        }
     }
 
     private void HandleFOV(float speed)
@@ -72,22 +86,13 @@ public class FPSCameraEffects : MonoBehaviour
         }
     }
 
-    // --- RÜZGAR EFEKTİ KONTROLÜ ---
     private void HandleSpeedLines(float speed)
     {
         if (speedLines == null) return;
 
-        // Konsola hızını yazdır (Test amaçlı)
-        // Eğer burada 0 yazıyorsa CharacterController hızını okuyamıyoruzdur.
-        // Debug.Log("Anlık Hız: " + speed); 
-
         if (speed > defaultSpeed + 1f)
         {
-            if (!speedLines.isPlaying)
-            {
-                speedLines.Play();
-                Debug.Log("Efekt BAŞLADI!"); // Bunu görüyorsan kod çalışıyordur.
-            }
+            if (!speedLines.isPlaying) speedLines.Play();
         }
         else
         {

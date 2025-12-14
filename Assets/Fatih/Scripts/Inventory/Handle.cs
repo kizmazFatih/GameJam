@@ -11,29 +11,18 @@ public class Handle : MonoBehaviour
 
     public int index;
 
-
     private MeshRenderer meshrenderer;
     private MeshFilter mesh;
 
-
-    [SerializeField] FPSController player_controller;
     private PlayerInputs playerInputs;
+    
+    [Header("UI Settings")]
+    [SerializeField] private Transform ui_parent;
+    [SerializeField] private Texture newTexture;
+    [SerializeField] private Texture oldTexture;
 
-
-
-
-    [Header("Placement")]
-    private Camera cam;
-
-    [SerializeField] private float rayDistance;
-    [SerializeField] private LayerMask GroundLayer;
-
-    private MeshRenderer visualMeshRenderer;
-    private GameObject visual;
-    private Material visualMaterial;
-
-
-
+    // UI Zamanlayıcısını takip etmek için değişken
+    private Coroutine uiHideCoroutine;
 
     private void Awake()
     {
@@ -49,8 +38,7 @@ public class Handle : MonoBehaviour
 
     void Start()
     {
-        cam = Camera.main;
-
+        // BU SATIRLARI AÇTIM (Yoksa SetHandlePrefab hata verir)
         mesh = GetComponent<MeshFilter>();
         meshrenderer = GetComponent<MeshRenderer>();
 
@@ -62,120 +50,45 @@ public class Handle : MonoBehaviour
         playerInputs.Interaction.Num4.performed += _ => SelectSlot(3);
 
         playerInputs.Interaction.Scroll.performed += OnScroll;
-
         playerInputs.Interaction.Drop.performed += _ => OnDropItem();
-    }
-    void Update()
-    {
-        Ray();
-    }
 
-
+        // Oyun başladığında UI kapalı başlasın
+        if (ui_parent != null)
+        {
+            ui_parent.gameObject.SetActive(false);
+        }
+    }
 
     public void SetHandlePrefab()
     {
+        //animasyonu oynat
+        //seçili slotun sizeını büyüt ve rengini değiştir
+        ShowUIWithTimer();
 
-
-
-        if (InventoryController.instance.player_inventory.slots[index].prefab == null)
+        // Envanter slotu boşsa veya prefab yoksa görseli temizle
+        /*if (InventoryController.instance.player_inventory.slots.Count <= index || 
+            InventoryController.instance.player_inventory.slots[index].prefab == null)
         {
-            mesh.mesh = null;
-            meshrenderer.material = null;
+            if (mesh != null) mesh.mesh = null;
+            if (meshrenderer != null) meshrenderer.material = null;
             return;
         }
 
         GameObject prefab = InventoryController.instance.player_inventory.slots[index].prefab;
 
-        mesh.mesh = prefab.GetComponent<MeshFilter>().sharedMesh;
-        meshrenderer.material = prefab.GetComponent<MeshRenderer>().sharedMaterial;
-        PlaceableVisual(prefab);
-
-
-
-
-
+        if (mesh != null) mesh.mesh = prefab.GetComponent<MeshFilter>().sharedMesh;
+        if (meshrenderer != null) meshrenderer.material = prefab.GetComponent<MeshRenderer>().sharedMaterial;*/
     }
 
-    void PlaceableVisual(GameObject _prefab)
-    {
-        if (visual != null) Destroy(visual);
+    #region Inputs
 
-        if (_prefab == null) return;
-        /*if (_prefab.TryGetComponent(out PlaceableObject placeable))
-        {
-            visual = Instantiate(_prefab, transform.position, Quaternion.identity);
-            visualMeshRenderer = visual.GetComponent<MeshRenderer>();
-            visualMaterial = visualMeshRenderer.material;
-            visual.layer = 2;
-            visual.GetComponent<BoxCollider>().isTrigger = true;
-        }
-        else
-        {
-            visual = null;
-        }*/
-    }
-
-
-
-
-    #region  Placement
-    void Ray()
-    {
-
-        if (visual == null) return;
-
-        BoxCollider col = visual.GetComponent<BoxCollider>();
-        bool temasVar = Physics.CheckBox(col.bounds.center, col.bounds.extents);
-        visualMeshRenderer.sharedMaterial.color = temasVar ? Color.red : Color.green;
-
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, rayDistance, GroundLayer))
-        {
-            visual.transform.position = hit.point + new Vector3(0, 0.1f, 0);
-
-            if (Input.GetMouseButtonDown(0) && !temasVar)
-            {
-                Place();
-            }
-            if (Input.GetMouseButtonDown(1))
-            {
-                visual.transform.rotation = Quaternion.Euler(visual.transform.rotation.eulerAngles + new Vector3(0, 90, 0));
-            }
-        }
-
-    }
-
-    private void Place()
-    {
-        visual.layer = 0;
-        visual.GetComponent<BoxCollider>().isTrigger = false;
-        visual.GetComponent<MeshRenderer>().material.color = Color.white;
-        visual = null;
-        InventoryController.instance.DeleteItem(index);
-
-    }
-
-
-
-
-
-
-    #endregion
-
-
-
-
-
-    #region  Inputs
-
-    [SerializeField] private Texture newTexture;
-    [SerializeField] private Texture oldTexture;
     public void SelectSlot(int value)
     {
         index = value;
         SetHandlePrefab();
-
         SelectedSlotUI();
 
+        // Slot değişince UI'ı göster ve sayacı başlat
     }
 
     private void OnScroll(InputAction.CallbackContext ctx)
@@ -196,7 +109,10 @@ public class Handle : MonoBehaviour
         }
         SetHandlePrefab();
         SelectedSlotUI();
+
+        // Scroll yapınca UI'ı göster ve sayacı başlat
     }
+
     void OnDropItem()
     {
         InventoryController.instance.DropItem(index);
@@ -204,6 +120,8 @@ public class Handle : MonoBehaviour
 
     void SelectedSlotUI()
     {
+        if (InventoryController.instance == null || InventoryController.instance.T_slots == null) return;
+
         for (int i = 0; i < 4; i++)
         {
             InventoryController.instance.T_slots[i].GetComponent<RawImage>().texture = oldTexture;
@@ -213,9 +131,39 @@ public class Handle : MonoBehaviour
 
     #endregion
 
+    #region UI Timer Logic (Yeni Eklenen Kısım)
 
+    private void ShowUIWithTimer()
+    {
+        // 1. UI'ı aktif et
+        if (ui_parent != null)
+        {
+            ui_parent.gameObject.SetActive(true);
+        }
 
+        // 2. Eğer çalışan bir sayaç varsa durdur (Süreyi başa sarmak için)
+        if (uiHideCoroutine != null)
+        {
+            StopCoroutine(uiHideCoroutine);
+        }
 
+        // 3. Yeni bir 4 saniyelik sayaç başlat
+        uiHideCoroutine = StartCoroutine(HideUIAfterDelay());
+    }
+
+    private IEnumerator HideUIAfterDelay()
+    {
+        // 4 saniye bekle
+        yield return new WaitForSeconds(4f);
+
+        // Süre dolunca UI'ı kapat
+        if (ui_parent != null)
+        {
+            ui_parent.gameObject.SetActive(false);
+        }
+
+        uiHideCoroutine = null;
+    }
+
+    #endregion
 }
-
-

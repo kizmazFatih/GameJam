@@ -2,9 +2,10 @@
 public enum PlayerSkill
 {
     Vertical,
-    Horizontal, 
-    Sprint, 
+    Horizontal,
+    Sprint,
     Jump,
     Crouch,
-    Dash
+    Dash,
+    Punch
 }

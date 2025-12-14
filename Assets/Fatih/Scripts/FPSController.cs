@@ -6,6 +6,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
+    [SerializeField] private FPSCameraEffects cameraEffects;
     private bool _isExhausted = false;
 
     [Header("Stamina Settings")]
@@ -48,15 +49,27 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float smoothTime = 0.05f;
 
     [Header("Slope & Slide Settings")]
-    [SerializeField] private float slideSpeed = 8.0f; // Kayma hızı
-    [SerializeField] private float slopeRayLength = 1.5f; // Eğim tespiti için ışın uzunluğu
-    [SerializeField] private float slopeForce = 5.0f; // Yere yapıştırma kuvveti
+    [SerializeField] private float slideSpeed = 8.0f;
+    [SerializeField] private float slopeRayLength = 1.5f;
+    [SerializeField] private float slopeForce = 5.0f;
+
+    // --- YENİ EKLENEN KISIM: YUMRUK AYARLARI ---
+    [Header("Combat Settings")]
+    [SerializeField] private float punchDamage = 20f;      // Vuruş hasarı
+    [SerializeField] private float punchRange = 2.5f;      // Vuruş menzili
+    [SerializeField] private float punchCooldown = 0.6f;   // İki vuruş arası bekleme süresi
+    [SerializeField] private float punchStaminaCost = 15f; // Vuruşun harcadığı enerji
+    [SerializeField] private LayerMask hitLayers;          // Neye vurabiliriz? (Enemy, Default vb.)
+    [SerializeField] private Transform cameraTransform;    // Raycast için kamera referansı
+    [SerializeField] private Animator weaponAnimator;      // Eğer kolların animasyonu varsa buraya ata
+
+    private float _lastPunchTime;
+    // ---------------------------------------------
 
     private float _currentVelocity;
     private float _gravity = -9.81f;
     private float _verticalVelocity;
-    
-    // Eğim tespiti için değişkenler
+
     private Vector3 _hitNormal;
     private bool _isSliding = false;
 
@@ -71,6 +84,7 @@ public class FPSController : MonoBehaviour
         Cursor.visible = false;
 
         _lastDashTime = -dashCooldown;
+        _lastPunchTime = -punchCooldown; // Oyun başlar başlamaz vurabilelim diye
 
         _currentStamina = maxStamina;
         if (staminaSlider != null)
@@ -78,37 +92,102 @@ public class FPSController : MonoBehaviour
             staminaSlider.maxValue = maxStamina;
             staminaSlider.value = _currentStamina;
         }
+
+        // Eğer kamera atanmadıysa otomatik bulmaya çalış
+        if (cameraTransform == null) cameraTransform = Camera.main.transform;
     }
 
     private void Update()
     {
         ApplyRotation();
-
-        // Eğimde kayıyor muyuz kontrol et
         CheckSlopeLogic();
 
         if (!_isDashing)
         {
             HandleStanceAndSpeed();
             HandleDash();
+
+            // --- YENİ FONKSİYON ÇAĞRISI ---
+            HandleAttack();
         }
 
         ApplyGravity();
         ApplyMovement();
     }
 
+    // --- YENİ EKLENEN FONKSİYON: SALDIRI MANTIĞI ---
+    private void HandleAttack()
+    {
+        bool attackInput = false;
+
+        if (InputManager.instance != null)
+        {
+            // Input System'de "Punch" adında bir Action oluşturduğunu varsayıyorum.
+            attackInput = InputManager.instance.playerInputs.Player.Punch.WasPressedThisFrame();
+        }
+
+        // --- Geri kalan mantık aynı ---
+        if (attackInput && 
+            Time.time >= _lastPunchTime + punchCooldown&&
+            InventoryController.instance.CheckSkill(PlayerSkill.Punch) && 
+            !_isExhausted && 
+            _currentStamina >= punchStaminaCost)
+        {
+            PerformPunch();
+        }
+    }
+
+    private void PerformPunch()
+    {
+        _lastPunchTime = Time.time;
+
+        // Staminayı düşür
+        _currentStamina -= punchStaminaCost;
+        if (staminaSlider != null) staminaSlider.value = _currentStamina;
+
+        // Animasyonu Oynat (Eğer Animator varsa)
+        if (weaponAnimator != null)
+        {
+            weaponAnimator.SetTrigger("Punch"); // Animator'da "Punch" adında bir Trigger parametresi olmalı
+        }
+        if (cameraEffects != null)
+    {
+        // 0.5f hafif sarsıntı, 2f güçlü sarsıntı. 
+        // Vuruşun gücüne göre bu sayıyı değiştirebilirsin.
+        cameraEffects.ShakeCamera(0.8f); 
+    }
+
+        // Raycast (Vuruş Tespiti)
+        // Kameranın merkezinden ileriye doğru görünmez bir ışın atıyoruz
+        RaycastHit hit;
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, punchRange, hitLayers))
+        {
+            // Konsola neye vurduğumuzu yazdır
+            Debug.Log("Vurulan Obje: " + hit.collider.name);
+
+
+            // Eğer vurulan objenin bir canı varsa hasar ver
+            // Örnek: Düşman scriptinde "TakeDamage" fonksiyonu varsa:
+            // var enemy = hit.collider.GetComponent<EnemyHealth>();
+            // if(enemy != null) enemy.TakeDamage(punchDamage);
+
+            // Vurulan objeye fiziksel güç uygula (İsteğe bağlı - kutuları itmek için)
+            if (hit.rigidbody != null)
+            {
+                hit.rigidbody.AddForce(-hit.normal * 5f, ForceMode.Impulse);
+            }
+        }
+    }
+    // ---------------------------------------------
+
     private void CheckSlopeLogic()
     {
-        // Karakterin altındaki zemine bir ışın (Raycast) gönderiyoruz
         if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, slopeRayLength))
         {
             _hitNormal = hitInfo.normal;
-            
-            // Zemin açısını hesapla
             float slopeAngle = Vector3.Angle(Vector3.up, _hitNormal);
 
-            // Eğer açı, CharacterController'ın limitinden büyükse kaymaya başla
-            if (slopeAngle > _characterController.slopeLimit && slopeAngle < 80f) // 80f çok dik duvarlar için koruma
+            if (slopeAngle > _characterController.slopeLimit && slopeAngle < 80f)
             {
                 _isSliding = true;
             }
@@ -126,12 +205,10 @@ public class FPSController : MonoBehaviour
 
     private void HandleDash()
     {
-        // Kayarken dash atmayı engelleyebiliriz (isteğe bağlı), şimdilik açık bırakıyorum.
         bool dashInput = false;
-        
-        // Input Manager null kontrolü eklemek iyi bir alışkanlıktır
-        if(InputManager.instance != null)
-             dashInput = InputManager.instance.playerInputs.Player.Dash.WasPressedThisFrame();
+
+        if (InputManager.instance != null)
+            dashInput = InputManager.instance.playerInputs.Player.Dash.WasPressedThisFrame();
 
         if (dashInput &&
             Time.time >= _lastDashTime + dashCooldown &&
@@ -165,7 +242,6 @@ public class FPSController : MonoBehaviour
 
     private void HandleStanceAndSpeed()
     {
-        // InputManager kontrolleri
         if (InputManager.instance == null) return;
 
         bool isSprinting = InputManager.instance.playerInputs.Player.Sprint.IsPressed();
@@ -232,29 +308,22 @@ public class FPSController : MonoBehaviour
     private void ApplyGravity()
     {
         bool jumpInput = false;
-        if(InputManager.instance != null) 
+        if (InputManager.instance != null)
             jumpInput = InputManager.instance.playerInputs.Player.Jump.WasPressedThisFrame();
 
-        // Yerçekimi ve Zıplama Mantığı
         if (_characterController.isGrounded)
         {
-            // Yere tam basarken hafif bir aşağı kuvvet uyguluyoruz ki isGrounded titremesin
-            // Ancak zıplarken bu kuvveti anında yeneceğiz
             if (_verticalVelocity < 0.0f)
             {
-                _verticalVelocity = -2.0f; 
+                _verticalVelocity = -2.0f;
             }
 
-            // Kayma durumunda zıplamayı engellemek istersen && !_isSliding ekleyebilirsin.
-            // Ama şimdilik oyuncunun zıplayabilmesini istiyorsun.
             if (jumpInput && InventoryController.instance.CheckSkill(PlayerSkill.Jump))
             {
-                // Zıplama formülü: v = sqrt(h * -2 * g)
                 _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * _gravity * gravityMultiplier);
             }
         }
 
-        // Yerçekimini uygula
         _verticalVelocity += _gravity * gravityMultiplier * Time.deltaTime;
     }
 
@@ -278,35 +347,36 @@ public class FPSController : MonoBehaviour
         if (InventoryController.instance.CheckSkill(PlayerSkill.Horizontal) == false) input.x = 0f;
 
         Vector3 inputDirection = (transform.right * input.x + transform.forward * input.y).normalized;
-        float currentTargetSpeed = _targetSpeed; // Yürüyüş, Koşu veya Eğilme hızı
-        
+        float currentTargetSpeed = _targetSpeed;
+
         Vector3 finalMoveVelocity = inputDirection * currentTargetSpeed;
 
-        // 2. Kayma Fiziği (Slide)
         if (_isSliding)
         {
-            // Kayma yönünü hesapla
             Vector3 slideDirection = new Vector3(_hitNormal.x, -_hitNormal.y, _hitNormal.z);
             Vector3.OrthoNormalize(ref _hitNormal, ref slideDirection);
-
-            // ÖNEMLİ: Oyuncunun hareketine zıt yönde veya aşağı doğru bir "çekim" kuvveti ekliyoruz.
-            // Bu sayede Sprint (9.0f) hızı, Kayma (örn: 6.0f) hızından büyükse oyuncu yukarı tırmanabilir.
             finalMoveVelocity += slideDirection * slideSpeed;
         }
 
-        // 3. Dash (Atılma) Kontrolü
         if (_isDashing)
         {
-            // Dash atarken kayma fiziğini yok sayıyoruz ki oyuncu kaçabilsin
             Vector3 dashMove = finalMoveVelocity.normalized;
             if (dashMove.magnitude < 0.1f) dashMove = transform.forward;
             finalMoveVelocity = dashMove * dashSpeed;
         }
 
-        // 4. Yerçekimi ve Dikey Hızın Eklenmesi
         finalMoveVelocity.y = _verticalVelocity;
 
-        // 5. Son Hareketi Uygula
         _characterController.Move(finalMoveVelocity * Time.deltaTime);
+    }
+
+    // Editörde vuruş menzilini görmek için yardımcı çizgi
+    private void OnDrawGizmosSelected()
+    {
+        if (cameraTransform != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * punchRange);
+        }
     }
 }
