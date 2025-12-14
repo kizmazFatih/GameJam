@@ -16,7 +16,5 @@ public class SOItem : ScriptableObject
     [Header("Stok")]
     public int my_amount;
     public int max_stack;
-
-
-
+    internal object itemPrefab;
 }
