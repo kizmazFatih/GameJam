@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -99,4 +100,34 @@ public class StoryEventManager : MonoBehaviour
             }
         }
     }
+
+
+    #region Die
+    [SerializeField] private GameObject player;
+
+    public Transform currentSpawnPoint;
+
+    
+    public void Die()
+    {
+        Debug.Log("Die");
+        CharacterController cc = player.GetComponent<CharacterController>();
+
+        // 2. Eğer varsa, geçici olarak kapat
+        if (cc != null)
+        {
+            cc.enabled = false;
+        }
+
+        // 3. Pozisyonu değiştir (Işınla)
+        player.transform.position = currentSpawnPoint.position;
+
+        // 4. CharacterController'ı tekrar aç
+        if (cc != null)
+        {
+            cc.enabled = true;
+        }
+    }
+
+    #endregion
 }

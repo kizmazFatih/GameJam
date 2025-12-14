@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slots:
   - isFull: 1
-    item_image: {fileID: 2800000, guid: 538e616a0779f6540bbfdc9119b24746, type: 3}
-    prefab: {fileID: 2118118698033633329, guid: 7aac495a924861740a170c49943c31b2, type: 3}
-    item: {fileID: 11400000, guid: 664059fc2517dc44eb1b90870e607587, type: 2}
-    amount: 1
-  - isFull: 1
     item_image: {fileID: 2800000, guid: 891db9d7563ad034eb798fecb1ce4274, type: 3}
     prefab: {fileID: 2118118698033633329, guid: 09e4600675f92a34a9172c288f5695f1, type: 3}
     item: {fileID: 11400000, guid: 561295ffd5c22f4498d79d6b4c6a2b72, type: 2}
+    amount: 1
+  - isFull: 1
+    item_image: {fileID: 2800000, guid: 538e616a0779f6540bbfdc9119b24746, type: 3}
+    prefab: {fileID: 2118118698033633329, guid: 7aac495a924861740a170c49943c31b2, type: 3}
+    item: {fileID: 11400000, guid: 664059fc2517dc44eb1b90870e607587, type: 2}
     amount: 1
   - isFull: 0
     item_image: {fileID: 0}

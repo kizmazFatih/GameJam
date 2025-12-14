@@ -17,9 +17,9 @@ public class FallingTrap : MonoBehaviour
         {
             dustuMu = true;
             Debug.Log("Oyuncu bastı, düşüş başlıyor!");
-            
+
             // Hemen düşürme, 0.1 sn bekle ki karakter tam üstüne basmış olsun
-            Invoke("DropPlatform", 0.1f); 
+            Invoke("DropPlatform", 0.1f);
         }
     }
 
