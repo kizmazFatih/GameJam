@@ -4,10 +4,11 @@ using UnityEngine;
 public class Raycast : MonoBehaviour
 {
     [SerializeField] private GameObject interactButtonUI;
+    [SerializeField] private float rayRange = 5f;
 
     void Update()
     {
-        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out RaycastHit hit))
+        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out RaycastHit hit, rayRange))
         {
             if (hit.transform.TryGetComponent(out IInteractable interactable))
             {
